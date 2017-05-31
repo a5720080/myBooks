@@ -1,0 +1,214 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>myBooks</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<style>
+		body 		{ padding-top:20px; word-wrap:break-word; }
+	</style>
+</head>
+<script>
+function validate() {
+    var name, date, series, publisher;
+    name = document.forms["add_book"]["book_name"].value;
+    date = document.forms["add_book"]["book_release"].value;
+    if (document.getElementById("series_method_1").checked) {
+        series = document.forms["add_book"]["series_name[0]"].value;
+    } else {
+        series = document.forms["add_book"]["series_name[1]"].value;
+    }
+    if (document.getElementById("publisher_method_1").checked) {
+        publisher = document.forms["add_book"]["publisher_name[0]"].value;
+    } else {
+        publisher = document.forms["add_book"]["publisher_name[1]"].value;
+    }
+    if (name == "" || name.trim().length == 0 || name == null) {
+        alert("Please enter book name.");
+        return false;
+    }
+    if (date == "" || date.trim().length == 0 || date == null) {
+        alert("Please enter release date.");
+        return false;
+    }
+    if (series == "" || series.trim().length == 0 || series == null) {
+        alert("Please enter series name.");
+        return false;
+    }
+    if (publisher == "" || publisher.trim().length == 0 || publisher == null) {
+        alert("Please enter publisher name.");
+        return false;
+    }
+}
+function confirm_delete(book_name,book_release) {
+    var book_name = book_name;
+    var confirmation = confirm("Remove this book?\n\nBook name : "+book_name);
+    if (confirmation == false) {
+        return false;
+    }
+}
+function choose_pub() {
+    document.getElementById("publisher_method_1").checked = true;
+}
+function add_pub() {
+    document.getElementById("publisher_method_2").checked = true;
+}
+function choose_series() {
+    document.getElementById("series_method_1").checked = true;
+}
+function add_series() {
+    document.getElementById("series_method_2").checked = true;
+}
+function highlightPage() {
+    var url = window.location.href;
+    if (url.split('/').pop() == "list") {
+        document.getElementById("page_1").classList.remove('btn-default');
+        document.getElementById("page_1").classList.add('btn-primary');
+    } else {
+        var page_button_id = "page_" + <%= page_number %>
+        document.getElementById(page_button_id).classList.remove('btn-default');
+        document.getElementById(page_button_id).classList.add('btn-primary');
+    }
+}
+</script>
+<body onload="highlightPage()">
+<div class="container">
+
+    <% include user_panel.ejs %>
+
+	<div class="page-header text-center">
+		<h1><span class="fa fa-book"></span> My books</h1>
+        </br></br>
+	</div>
+    <% if (list.length != 0) { %>
+	<div class="row">
+
+		<!-- LOCAL INFORMATION -->
+		<div class="col-sm-12">
+            <% if (list) {%>
+                <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><strong>Search my books collection</strong></h3>
+                </div>
+                <div class="panel-body">
+                    <form action="/search" method="post">
+                        <input type="text" name="keyword" placeholder="Keyword" style="margin-bottom:0 !important; padding-left:1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem; max-width:100%">
+                        in
+                        <select name="search_in"style="height:2.4rem; padding:1px; margin:1px; border: 1px solid #ccc; border-radius: 4px; ">
+                            <option value="Book name">Book name</option>
+                            <option value="Series">Series</option>
+                            <option value="Publisher">Publisher</option>
+                        </select>
+                        <input class="btn btn-xs btn-primary" type="submit" value="Search">
+                    </form>
+                </div>
+                </div>
+				<table class="table table-condensed table-responsive table-hover">
+					<thead class="thead-default">
+						<tr>
+                            <th>Book name</th>
+                            <!--<th>Release date (MM-DD-YYYY)</th>-->
+                            <th width="1px" style='text-align:center !important;' nowrap>Make changes</th>
+						</tr>
+					</thead>
+					<tbody>
+                        <style>
+                            .book_name {
+                                display: block;
+                                position: relative;
+                            }
+
+                            .book_cover {
+                                background-color: #aaa;
+                                visibility: hidden;
+                                position: absolute;
+                                padding:1rem;
+                                right:0;
+                                top:calc(100% + 5px);
+                                z-index: 1;
+                                opacity: 0;
+                                transition: opacity 0.3s linear;
+                            }
+
+                            .book_name:hover .book_cover {
+                                visibility: visible;
+                                opacity: 1;
+                            }
+                        </style>
+						<% for(var n =0; n < list.length; n++) { %>
+							<tr>
+                                <td id="book_<%= list[n].b_id %>_name"><div class="book_name"><a href="/book/<%= list[n].b_id %>"><%= list[n].b_name %></a><span class="book_cover"><img width="300px" src='/static/<%= list[n].b_id %>_cover' onerror="this.parentNode.style.display='none'"/></span></div></td>
+                                <td nowrap>
+                                    <button onclick='window.open("/edit/<%= list[n].b_id %>","_self")' class="btn btn-xs btn-warning">&#x270e; Edit</button>
+                                    <form style="display:inline;"name="delete_<%= list[n].b_id %>" onsubmit='return confirm_delete("<%= list[n].b_name %>")' action="/delete/<%= list[n].b_id %>" method="post">
+                                        <button class="btn btn-xs btn-danger">&#x2716; Remove</a>
+                                    </form>
+                                </td>
+							</tr>
+						<% } %>
+					</tbody>
+				</table>
+                        <strong>Total books : <%= list_length %></strong></br></br>
+                Page
+                <% for(var i =0; i < list_length; i++) { %>
+                    <% if (i%10 == 0) { %>
+                        <a id="page_<%= i/10+1 %>" class="btn btn-xs btn-default" href="/list/<%= i/10+1 %>"><%= i/10+1 %></a>
+                    <% } %>
+                <% } %></br></br>
+            <% } %>
+		</div>
+	</div>
+    <% } %>
+    
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><strong>Add a new book to my collection</strong></h3>
+        </div>
+        <div class="panel-body">
+            <form name='add_book' action='/add_book' method="post" onsubmit="return validate()">
+                <div class="row" style="margin:0 !important;">
+                    <div name="main_info" style="float:left; margin-right:100px;">
+                        <strong>Book's name</strong></br>
+                        <input name="book_name" type="text" placeholder="Name" style="padding-left:1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;"/></br>
+                    
+                        <strong>Released on</strong></br>
+                        <input name="book_release" type="date" style="padding-left:1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;" /></br>
+                    
+                        <strong>From series</strong></br>
+                        <input id="series_method_1" name="series_method" type="radio" value="choose" onclick="series_method_choose();" onload="series_method_choose()"style="margin-right:1rem;" checked required>Choose from available series</br>
+                        <select name="series_name[0]" onclick="choose_series()" style="margin: 1px 1px 1px 30px; height:2.4rem; padding:1px; border: 1px solid #ccc; border-radius: 4px; ">
+                            <% series.forEach(function(data) { %>
+                                <option value="<%= data.s_id %>"><%= data.s_name %></option>
+                            <% }); %>
+                        </select></br>
+                        <input id="series_method_2" name="series_method" type="radio" value="add" onclick="series_method_choose();" style="margin-right:1rem;" required>Add a new series</br>
+                        <input name="series_name[1]" type="text" placeholder="Name" onclick="add_series()" style="padding-left:1rem; margin-left:30px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;"/></br>
+                        
+                        <strong>Published by</strong></br>
+                        <input id="publisher_method_1"  name="publisher_method" type="radio" value="choose" style="margin-right:1rem;" checked required>Choose from list of known publishers</br>
+                        <select name="publisher_name[0]"onclick="choose_pub()" style="margin: 1px 1px 1px 30px; height:2.4rem; padding:1px; border: 1px solid #ccc; border-radius: 4px; ">
+                            <% publishers.forEach(function(data) { %>
+                                <option value="<%= data.p_id %>"><%= data.p_name %></option>
+                            <% }); %>
+                        </select></br>
+                        <input id="publisher_method_2" name="publisher_method" type="radio" value="add" style="margin-right:1rem;" required>Add a new publisher</br>
+                        <input name="publisher_name[1]" type="text" placeholder="Name" onclick="add_pub()" style="padding-left:1rem; margin-left:30px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;"/></br>
+                        
+                    </div>
+                    <div name="categories_col1" style="float:left; max-height:100%;">
+                        <strong>Choose book categories here.</strong></br>
+                        <% for(var i = 0; i < categories.length ; i++) { %>
+                            <input name="categories" type="checkbox" value="<%= categories[i].c_id %>"><%= categories[i].c_name %></input></br>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="row" style="margin:0 !important;">
+                    <input class="btn btn-xs btn-primary" style="margin-top:15px;" type="submit" value="Add" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

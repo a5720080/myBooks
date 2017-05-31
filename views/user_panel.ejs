@@ -1,0 +1,16 @@
+<!-- user_panel.ejs -->
+<!doctype html>
+<html>
+<head>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+</head>
+<body>
+    <div id="user panel" style="float: right;">
+        <span class="fa fa-user"></span> <%= username %>
+		<a href="/list" class="btn btn-xs btn-success">My books</a>
+		<a href="/profile" class="btn btn-xs btn-info">Profile</a>
+		<a href="/logout" class="btn btn-xs btn-danger">Logout</a>
+    </div>
+</body>
+</html>

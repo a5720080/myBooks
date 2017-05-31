@@ -1,0 +1,94 @@
+<!-- views/book.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>myBooks</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<style>
+		body 		{ padding-top:20px; word-wrap:break-word; }
+	</style>
+</head>
+<script>
+function confirm_delete(book_name,book_release) {
+    var book_name = book_name;
+    var confirmation = confirm("Remove this book?\n\nBook name : "+book_name);
+    if (confirmation == false) {
+        return false;
+    }
+}
+function errorImage() {
+    document.getElementById("image_panel").style.display = 'none';
+}
+</script>
+<body>
+<div class="container">
+
+    <% include user_panel.ejs %>
+
+	<div class="page-header text-center">
+		<h1><span class="fa fa-book"></span> <%= book_info[0].b_name %></li></h1>
+        </br></br>
+	</div>
+    
+    <% if (info_msg) { %>
+        <div class="alert alert-info">
+            <strong><%= info_msg %></strong>
+        </div>
+    <% } else if (success_msg) { %>
+        <div class="alert alert-success">
+            <strong><%= success_msg %></strong>
+        </div>
+    <% } else if (danger_msg) { %>
+        <div class="alert alert-danger">
+            <strong><%= danger_msg %></strong>
+        </div>
+    <% } %>
+    
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><strong>Book's information</strong></h3>
+        </div>
+        <div class="panel-body">
+            <div class="row" style="margin-bottom:15px;">
+            <img style="max-width:25%; max-height:25%; float:right; margin-right:15px;" src='/static/<%= book_info[0].b_id %>_cover' onerror="this.style.display='none'"/>
+            <ul>
+                <li><strong>Name : </strong><%= book_info[0].b_name %></li>
+                <li><strong>Release date : </strong><%= book_info[0].b_release_date %></li>
+                <li><strong>Series : </strong><%= book_info[1].s_name %></li>
+                <li><strong>Publisher : </strong><%= book_info[2].p_name %></li>
+                <li><strong>Categories : </strong>
+                    <% for(var i=0; i<book_info[3].length; i++) { %>
+                        <% if (i < book_info[3].length-1) {%>
+                            <%= book_info[3][i].c_name %>, 
+                        <% } else { %>
+                            <%= book_info[3][i].c_name %>
+                        <% }; %>
+                    <% }; %>
+                </li>
+                <li><strong>Add/Change a book cover </strong>
+                    <form style="display:inline;" action="/upload/<%= book_info[0].b_id %>" enctype="multipart/form-data" method="post">
+                        <input id="select_file" type="file" name="upload" style="display:none;" onchange="this.form.submit();" accept="image/*">
+                        <label for="select_file" class="btn btn-xs btn-primary" >choose file</label>
+                    </form>
+                </li>
+            </ul>
+            </div>
+            <button type="button" class="btn btn-xs btn-default" onclick='window.open("/list","_self");'>All books</button>
+            <form style="display:inline;"name="delete_<%= book_info[0].b_id %>" onsubmit='return confirm_delete("<%= book_info[0].b_name %>")' action="/delete/<%= book_info[0].b_id %>" method="post">
+                <button class="btn btn-xs btn-danger" style="float:right">&#x2716; Remove this book</a>
+            </form>
+            <button onclick='window.open("/edit/<%= book_info[0].b_id %>","_self")' class="btn btn-xs btn-warning" style="float:right; margin-right:0.5rem;">&#x270e; Edit this book info</button>
+        </div>
+    </div>
+    <div id="image_panel" class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><strong>Full image of book cover</strong></h3>
+        </div>
+        <div class="panel-body">
+            <img style="float:left; max-width:100% !important;"src='/static/<%= book_info[0].b_id %>_cover' onerror="errorImage();"/>
+        </div>
+    </div>
+</div>
+</body>
+</html>

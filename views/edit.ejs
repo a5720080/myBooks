@@ -1,0 +1,171 @@
+<!-- views/edit.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>myBooks</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<style>
+		body 		{ padding-top:20px; word-wrap:break-word; }
+	</style>
+</head>
+<script>
+function validate() {
+    var name, date;
+    name = document.forms["add_book"]["book_name"].value;
+    date = document.forms["add_book"]["book_release"].value;
+    if (name == "" || name.trim().length == 0 || name == null) {
+        alert("Please enter book name.");
+        return false;
+    }
+    if (date == "" || date.trim().length == 0 || date == null) {
+        alert("Please enter release date.");
+        return false;
+    }
+}
+function confirm_edit() {
+    var book_name = document.forms["edit_book"]["book_name"].value;
+    var book_release = document.forms["edit_book"]["book_release"].value;
+    var series_name, publisher_name;
+    if (document.getElementById("series_method_1").checked) {
+        series_name = document.forms["edit_book"]["series_name[0]"].value;
+    } else {
+        series_name = document.forms["edit_book"]["series_name[1]"].value;
+    }
+    if (document.getElementById("publisher_method_1").checked) {
+        publisher_name = document.forms["edit_book"]["publisher_name[0]"].value;
+    } else {
+        publisher_name = document.forms["edit_book"]["publisher_name[1]"].value;
+    }
+    var confirmation = confirm("Confirm edit?\n\nBook name : "+book_name+"\nRelease date : "+book_release+" (YYYY-MM-DD)\nSeries : "+series_name+"\nPublisher : "+publisher_name);
+    if (confirmation == false) {
+        return false;
+    }
+}
+function choose_pub() {
+    document.getElementById("publisher_method_1").checked = true;
+}
+function add_pub() {
+    document.getElementById("publisher_method_2").checked = true;
+}
+function choose_series() {
+    document.getElementById("series_method_1").checked = true;
+    document.getElementById("publisher_method_1").disabled = true;
+    document.getElementById("publisher_method_2").disabled = true;
+    document.getElementById("publisher_name[0]").disabled = true;
+    document.getElementById("publisher_name[1]").disabled = true;
+}
+function add_series() {
+    document.getElementById("series_method_2").checked = true;
+    document.getElementById("publisher_method_1").disabled = false;
+    document.getElementById("publisher_method_2").disabled = false;
+    document.getElementById("publisher_name[0]").disabled = false;
+    document.getElementById("publisher_name[1]").disabled = false;
+}
+</script>
+<body>
+<div class="container">
+
+    <% include user_panel.ejs %>
+
+	<div class="page-header text-center">
+		<h1><span class="fa fa-pencil"></span> Edit book information</h1>
+        </br></br>
+	</div>
+    
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><strong>Current book's information</strong></h3>
+        </div>
+        <div class="panel-body">
+            <ul>
+                <li>Name : <%= book_info[0].b_name %></li>
+                <li>Release date : <%= book_info[0].b_release_date %></li>
+                <li>Series : <%= book_info[1].s_name %></li>
+                <li>Publisher : <%= book_info[2].p_name %></li>
+                <li>Categories : 
+                    <% for(var i=0; i<book_info[3].length; i++) { %>
+                        <% if (i < book_info[3].length-1) {%>
+                            <%= book_info[3][i].c_name %>, 
+                        <% } else { %>
+                            <%= book_info[3][i].c_name %>
+                        <% }; %>
+                    <% }; %>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><strong>New book's information</strong></h3>
+        </div>
+        <div class="panel-body">
+            <form name="edit_book" action='/apply_changes/<%= book_info[0].b_id %>' method="post" onload="default_setting();" onsubmit="return confirm_edit()">
+                <div class="row" style="margin:0 !important;">
+                    <div name="main_info" style="float:left; margin-right:100px;">
+                        <strong>Book's name</strong></br>
+                        <input name="book_name" type="text" placeholder="Name" 
+                        value="<%= book_info[0].b_name %>"
+                        style="padding-left:1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;"/></br>
+                    
+                        <strong>Released on</strong></br>
+                        <input name="book_release" type="date"
+                        value="<%= book_info[0].b_release_date.split('-')[2] %>-<%= book_info[0].b_release_date.split('-')[0] %>-<%= book_info[0].b_release_date.split('-')[1] %>"
+                        style="padding-left:1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;" /></br>
+                    
+                        <strong>From series</strong></br>
+                        <input id="series_method_1" name="series_method" type="radio" value="choose" onclick="choose_series();" onload="series_method_choose()"style="margin-right:1rem;" checked required>Choose from available series</br>
+                        <select name="series_name[0]" onclick="choose_series()" style="margin-left:30px;">
+                            <% all_series_info.forEach(function(data) { %>
+                                <% if (data.s_name == book_info[1].s_name) {%>
+                                    <option selected="selected" value="<%= data.s_id %>"><%= data.s_name %></option>
+                                <% } else { %>
+                                    <option value="<%= data.s_id %>"><%= data.s_name %></option>
+                                <% }; %>
+                            <% }); %>
+                        </select></br>
+                        
+                        <input id="series_method_2" name="series_method" type="radio" value="add" onclick="add_series();" style="margin-right:1rem;" required>Add a new series</br>
+                        <input name="series_name[1]" type="text" placeholder="Name" onclick="add_series()" style="padding-left:1rem; margin-left:30px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;"/></br>
+                        
+                        <strong>Published by</strong></br>
+                        <input disabled id="publisher_method_1"  name="publisher_method" type="radio" value="choose" style="margin-right:1rem;" checked required>Choose from list of known publishers</br>
+                        <select disabled id="publisher_name[0]" name="publisher_name[0]"onclick="choose_pub()" style="margin-left:30px;">
+                            <% all_publishers_info.forEach(function(data) { %>
+                                <% if (data.p_name == book_info[2].p_name) {%>
+                                    <option selected="selected" value="<%= data.p_id %>"><%= data.p_name %></option>
+                                <% } else { %>
+                                    <option value="<%= data.p_id %>"><%= data.p_name %></option>
+                                <% }; %>
+                            <% }); %>
+                        </select></br>
+                        
+                        <input disabled id="publisher_method_2" name="publisher_method" type="radio" value="add" style="margin-right:1rem;" required>Add a new publisher</br>
+                        <input disabled id="publisher_name[1]"name="publisher_name[1]" type="text" placeholder="Name" onclick="add_pub()" style="padding-left:1rem; margin-left:30px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1rem;"/></br>
+                        
+                    </div>
+                    <div name="catagories_add" style="float:left; max-height:100%; margin-right:30px;">
+                        <strong>Choose book categories here.</strong></br>
+                        <% for(var i = 0; i < all_categories_info.length ; i++) { %>
+                            <input name="categories" type="checkbox" value="<%= all_categories_info[i].c_id %>"><%= all_categories_info[i].c_name %></input></br>
+                        <% } %>
+                    </div>
+                    <div name="catagories_remove" style="float:left; max-height:100%;">
+                        <strong>Remove book catagories</strong></br>
+                        <% for(var i=0; i<book_info[3].length; i++) { %>
+                            <input name="remove_cat" value="<%= book_info[3][i].c_id %>" type="checkbox" style="margin-right:1rem;"><%= book_info[3][i].c_name %>
+                            </br>
+                        <% }; %>
+                    </div>
+                </div>
+                <div class="row" style="margin:0 !important;">
+                    <input class="btn btn-xs btn-primary" style="margin-top:15px;" type="submit" value="Apply" />
+                    <button type="button" class="btn btn-xs btn-danger" style="margin-top:15px;" onclick='window.history.back();'>Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

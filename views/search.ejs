@@ -1,0 +1,94 @@
+<!-- views/search.ejs -->
+<!doctype html>
+<html>
+<head>
+	<title>myBooks</title>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<style>
+		body 		{ padding-top:20px; word-wrap:break-word; }
+	</style>
+</head>
+<body>
+<div class="container">
+
+    <% include user_panel.ejs %>
+
+	<div class="page-header text-center">
+		<h1><span class="fa fa-search"></span> Search results</li></h1>
+        </br></br>
+	</div>
+    
+    <% if (error_msg) { %>
+        <div class="alert alert-danger">
+            <strong><%= error_msg %></strong>
+        </div>
+    <% } %>
+    
+    <% if (results) {%>
+        <% if (results.length > 0) {%>
+            <strong>Results for : '<%= keyword %>' in <%= search_in %>, </strong>
+            <strong>total results : <%= results.length%></strong></br></br>
+            <style>
+                .book_name {
+                    display: block;
+                    position: relative;
+                }
+
+                .book_cover {
+                    background-color: #aaa;
+                    visibility: hidden;
+                    position: absolute;
+                    padding:1rem;
+                    right:0;
+                    top:0;
+                    z-index: 1;
+                    opacity: 0;
+                    transition: opacity 0.3s linear;
+                }
+
+                .book_name:hover .book_cover {
+                    visibility: visible;
+                    opacity: 1;
+                }
+            </style>
+            <% results.forEach(function(data){%>
+                <a href="/book/<%= data.b_id %>">
+                    <div class="col-sm-12">
+                        <div class="book_name">
+                            <a href="/book/<%= data.b_id %>">
+                                <div class="well">
+                                    <h3 style="margin:0;"><span class="fa fa-book"></span> <%= data.b_name %></h3><span class="book_cover"><img width="300px" src='/static/<%= data.b_id %>_cover' onerror="this.parentNode.style.display='none'"/></span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </a>
+            <% });%>
+            <!--
+            <div class="container">
+                <% for(var i =0; i < results.length/3; i++) { %>
+                    <div class="row">
+                            <% for(var j =0; (j < 3 && i*3+j < results.length ); j++) { %>
+                                <a href="/book/<%= results[i*3+j].b_id %>">
+                                <div class="col-md-4 well text-center" style="width:30% !important; padding: 15px !important; margin: 0 3% 3% 0 !important; height:300px !important;">
+                                    <%= results[i*3+j].b_name%></br>
+                                    <img style="max-width:100%; max-height:90%; display:inline-block;" src='/static/<%= results[i*3+j].b_id %>_cover' onerror="this.style.display='none'"/>
+                                </div>
+                                </a>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+            -->
+        <% } else { %>
+            <div class="alert alert-danger">
+                <strong>No results found!</strong>
+            </div>
+        <% } %>
+    <% } %>
+    
+    
+</div>
+</body>
+</html>
